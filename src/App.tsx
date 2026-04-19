@@ -24,6 +24,7 @@ import { Label } from '@/components/ui/label';
 import { INITIAL_CLIENTS,INITIAL_FOLDERS,INITIAL_TEMPLATES } from './feature/types/data';
 import { useTheme } from './feature/utils/Usetheme';
 import { TemplateListView } from './components/TemplateListView';
+import { AppToolbar } from './components/AppHeader';
 
 
 export default function App() {
@@ -202,68 +203,18 @@ export default function App() {
       <div className="min-h-screen bg-background flex flex-col overflow-hidden">
         {/* Main Content */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {viewMode !== "admin" && (
-            <header className="h-16 border-b flex items-center justify-between px-6 shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
-                    <TreeIcon className="w-5 h-5" />
-                  </div>
-                  <h1 className="font-bold text-xl tracking-tight hidden sm:block">
-                    DocuStruct
-                  </h1>
-                </div>
-
-                <Tabs
-                  value={viewMode}
-                  onValueChange={(v) => {
-                    setViewMode(v as "admin" | "client");
-                    if (v === "admin") setAdminView("list");
-                  }}
-                  className="w-auto"
-                >
-                  <TabsList className="h-9">
-                    <TabsTrigger value="admin" className="text-xs">
-                      Admin
-                    </TabsTrigger>
-                    <TabsTrigger value="client" className="text-xs">
-                      Client
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleTheme}
-                  className="h-9 w-9 rounded-lg"
-                >
-                  {theme === "light" ? (
-                    <Moon className="w-[1.2rem] h-[1.2rem]" />
-                  ) : (
-                    <Sun className="w-[1.2rem] h-[1.2rem]" />
-                  )}
-                </Button>
-                <Select
-                  value={activeClientId || ""}
-                  onValueChange={setActiveClientId}
-                >
-                  <SelectTrigger className="w-[180px] h-9 bg-muted/50 border-none">
-                    <SelectValue placeholder="Select client" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </header>
-          )}
+          
+            <AppToolbar
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              setAdminView={setAdminView}
+              theme={theme}
+              toggleTheme={toggleTheme}
+              clients={clients}
+              activeClientId={activeClientId}
+              setActiveClientId={setActiveClientId}
+            />
+          
 
           <div className="flex-1 overflow-auto p-6">
             {viewMode === "admin" ? (
