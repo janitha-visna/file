@@ -1,30 +1,14 @@
 import * as React from 'react';
-import { cn } from '@/lib/utils';
-import { Plus, ChevronRight, FolderTree as TreeIcon, Rocket, Users, Pencil, Trash2, CalendarClock, MoreVertical, ArrowLeft, LayoutGrid, Clock, Sun, Moon } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger,
-  DropdownMenuSeparator
-} from '@/components/ui/dropdown-menu';
+import {  TooltipProvider } from '@/components/ui/tooltip';
 import { FolderNode, FolderType, Template, DateVariable, SchedulingRule, ClientInstance } from './types';
 import { buildTree, deleteNodeRecursive } from './lib/folder-utils';
 import { FolderTree } from './components/FolderTree';
 import { AddFolderDialog } from './components/AddFolderDialog';
 import { TemplateSchedulerDialog } from './components/TemplateSchedulerDialog';
-import { ClientScheduler } from './components/ClientScheduler';
-import { Label } from '@/components/ui/label';
 import { INITIAL_CLIENTS,INITIAL_FOLDERS,INITIAL_TEMPLATES } from './feature/types/data';
 import { useTheme } from './feature/utils/Usetheme';
-import { TemplateListView } from './components/TemplateListView';
 import { AppToolbar } from './components/AppHeader';
+import { AppContent } from './components/AppContent';
 
 
 export default function App() {
@@ -203,244 +187,42 @@ export default function App() {
       <div className="min-h-screen bg-background flex flex-col overflow-hidden">
         {/* Main Content */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          
-            <AppToolbar
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-              setAdminView={setAdminView}
-              theme={theme}
-              toggleTheme={toggleTheme}
-              clients={clients}
-              activeClientId={activeClientId}
-              setActiveClientId={setActiveClientId}
-            />
-          
+          <AppToolbar
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            setAdminView={setAdminView}
+            theme={theme}
+            toggleTheme={toggleTheme}
+            clients={clients}
+            activeClientId={activeClientId}
+            setActiveClientId={setActiveClientId}
+          />
 
-          <div className="flex-1 overflow-auto p-6">
-            {viewMode === "admin" ? (
-              adminView === "list" ? (
-                <TemplateListView
-                  templates={templates}
-                  folders={folders}
-                  theme={theme}
-                  toggleTheme={toggleTheme}
-                  onCreateTemplate={() => handleAdd(null, "template")}
-                  onOpenTemplate={(templateId) => {
-                    setActiveTemplateId(templateId);
-                    setAdminView("detail");
-                  }}
-                  onRenameTemplate={handleRenameTemplate}
-                  onOpenScheduler={handleOpenSchedulerForTemplate}
-                  onDeleteTemplate={handleDelete}
-                />
-              ) : (
-                <div className="max-w-4xl mx-auto space-y-6">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span
-                          className="cursor-pointer hover:text-foreground transition-colors"
-                          onClick={() => setAdminView("list")}
-                        >
-                          Templates
-                        </span>
-                        <ChevronRight className="w-3 h-3" />
-                        <span className="text-foreground font-medium">
-                          {activeTemplate?.name}
-                        </span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setAdminView("list")}
-                        className="gap-2 h-8 text-xs text-muted-foreground hover:text-foreground"
-                      >
-                        <ArrowLeft className="w-3.5 h-3.5" />
-                        Back to List
-                      </Button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-3xl font-bold tracking-tight">
-                        {activeTemplate?.name}
-                      </h2>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={toggleTheme}
-                          className="h-9 w-9 rounded-lg mr-2"
-                        >
-                          {theme === "light" ? (
-                            <Moon className="w-[1.2rem] h-[1.2rem]" />
-                          ) : (
-                            <Sun className="w-[1.2rem] h-[1.2rem]" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setIsSchedulerOpen(true)}
-                          className="gap-2 h-9"
-                        >
-                          <CalendarClock className="w-4 h-4" />
-                          Scheduler
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            activeTemplate &&
-                            handleRenameTemplate(activeTemplate)
-                          }
-                          className="h-9"
-                        >
-                          Rename
-                        </Button>
-                        <Button
-                          onClick={handleLaunchClient}
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 h-9 ml-2"
-                        >
-                          <Rocket className="w-4 h-4 mr-2" />
-                          Launch Client
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Card className="border-none shadow-sm bg-muted/20">
-                    <CardHeader className="pb-3 px-6">
-                      <CardTitle className="text-lg">
-                        Hierarchy Designer
-                      </CardTitle>
-                      <CardDescription>
-                        Add cycles, stages, and folders. Attach scheduling rules
-                        to folders.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="px-6 pb-6">
-                      <div className="bg-background rounded-xl border p-4 min-h-[500px]">
-                        {treeData.length > 0 ? (
-                          <FolderTree
-                            nodes={treeData}
-                            onAdd={handleAdd}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                            onOpenScheduler={() => setIsSchedulerOpen(true)}
-                          />
-                        ) : (
-                          <div className="h-full flex flex-col items-center justify-center text-center p-12 space-y-4">
-                            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                              <TreeIcon className="w-8 h-8 text-muted-foreground" />
-                            </div>
-                            <Button
-                              variant="outline"
-                              onClick={() =>
-                                rootNode && handleAdd(rootNode.id, "cycle")
-                              }
-                            >
-                              <Plus className="w-4 h-4 mr-2" />
-                              Add First Cycle
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )
-            ) : (
-              <div className="max-w-5xl mx-auto space-y-6">
-                {activeClient ? (
-                  <>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>Clients</span>
-                        <ChevronRight className="w-3 h-3" />
-                        <span className="text-foreground font-medium">
-                          {activeClient.name}
-                        </span>
-                      </div>
-                      <h2 className="text-3xl font-bold tracking-tight">
-                        {activeClient.name} Workspace
-                      </h2>
-                      <p className="text-muted-foreground">
-                        Manage deadlines and document completion for this
-                        client.
-                      </p>
-                    </div>
-
-                    <Tabs defaultValue="schedule" className="space-y-6">
-                      <TabsList>
-                        <TabsTrigger value="schedule">
-                          Schedule View
-                        </TabsTrigger>
-                        <TabsTrigger value="setup">Setup Dates</TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="schedule">
-                        <ClientScheduler
-                          folders={folders}
-                          variables={
-                            templates.find(
-                              (t) => t.id === activeClient.templateId
-                            )?.dateVariables || []
-                          }
-                          client={activeClient}
-                          onToggleComplete={handleToggleFolderComplete}
-                        />
-                      </TabsContent>
-
-                      <TabsContent value="setup">
-                        <Card>
-                          <CardHeader>
-                            <CardTitle>Input Required Dates</CardTitle>
-                            <CardDescription>
-                              Enter the actual dates for this client to
-                              calculate the schedule.
-                            </CardDescription>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            {templates
-                              .find((t) => t.id === activeClient.templateId)
-                              ?.dateVariables.map((v) => (
-                                <div key={v.id} className="grid gap-2">
-                                  <Label htmlFor={v.id}>{v.name}</Label>
-                                  <Input
-                                    id={v.id}
-                                    type="date"
-                                    value={
-                                      activeClient.variableValues[v.id] || ""
-                                    }
-                                    onChange={(e) =>
-                                      handleUpdateClientDate(
-                                        v.id,
-                                        e.target.value
-                                      )
-                                    }
-                                  />
-                                </div>
-                              ))}
-                          </CardContent>
-                        </Card>
-                      </TabsContent>
-                    </Tabs>
-                  </>
-                ) : (
-                  <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-4">
-                    <Users className="w-12 h-12 text-muted-foreground" />
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-bold">Select a Client</h3>
-                      <p className="text-muted-foreground">
-                        Choose a client from the header dropdown or launch a new
-                        one from a template.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <AppContent
+            viewMode={viewMode}
+            adminView={adminView}
+            setAdminView={setAdminView}
+            templates={templates}
+            activeTemplateId={activeTemplateId}
+            setActiveTemplateId={setActiveTemplateId}
+            activeTemplate={activeTemplate}
+            activeClient={activeClient}
+            folders={folders}
+            theme={theme}
+            toggleTheme={toggleTheme}
+            treeData={treeData}
+            onAdd={handleAdd}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onRenameTemplate={handleRenameTemplate}
+            onOpenSchedulerForTemplate={handleOpenSchedulerForTemplate}
+            onLaunchClient={handleLaunchClient}
+            onUpdateVariables={handleUpdateVariables}
+            onUpdateClientDate={handleUpdateClientDate}
+            onToggleFolderComplete={handleToggleFolderComplete}
+            onUpdateAllRules={handleUpdateAllRules}
+            setIsSchedulerOpen={setIsSchedulerOpen}
+          />
         </main>
 
         <AddFolderDialog
